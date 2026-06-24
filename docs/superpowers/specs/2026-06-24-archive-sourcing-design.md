@@ -30,7 +30,10 @@ is not cleanly transcribed anywhere else.
   `https://turingarchive.kings.cam.ac.uk/amt-c-10`); some items use a longer
   section-prefixed slug, so a manual URL override is required for the irregular ones.
 - Each item page embeds the document as a **scanned PDF** in a custom viewer (no API, no
-  IIIF, no existing transcriptions). Some PDFs approach 100 MB.
+  IIIF, no existing transcriptions). Some PDFs approach 100 MB. **The PDF URL is injected
+  at runtime by the viewer's JavaScript** — it is *not* in the static HTML (verified on
+  `AMT/C/10` = `node/117`), so a plain HTTP client can read the page metadata but cannot
+  obtain the PDF. Capturing the PDF requires rendering the page in a headless browser.
 - `robots.txt` (Drupal default) disallows only `/admin`, `/search`, `/user/*`, etc. — the
   archive item pages and PDFs are **not** disallowed; there is no crawl-delay directive.
 - Downloads are permitted **for personal use**; all material is **copyright-restricted**.
@@ -67,9 +70,14 @@ chat application never imports this package, so there is no runtime coupling.
 
 - **`resolver`** — maps an AMT reference (`AMT/C/10`) to its item-page URL
   (`/amt-c-10`). Honors a per-entry `url:` override in `sources.yaml` for irregular slugs.
-- **`fetcher`** — polite HTTP client: custom User-Agent, configurable delay, on-disk cache
-  keyed by URL, `robots.txt` check. Fetches an item page and extracts the **PDF URL** plus
-  **metadata** (title, date, catalogue ref) from the page HTML.
+- **`metadata`** — pure HTML → `ItemMetadata` parser (catalogue ref, title, date,
+  physical description, copyright); tested against recorded HTML fixtures.
+- **`browser`** — a `Browser` protocol with a `PlaywrightBrowser` implementation that
+  renders the item page in headless Chromium, intercepts the network response whose
+  content is the PDF, and returns `(html, pdf_url, pdf_bytes)`. A custom User-Agent and a
+  configurable inter-request delay keep it polite; downloads are written to an on-disk
+  cache so nothing is fetched twice. A `FakeBrowser` backs offline tests (mirrors the
+  `ChatProvider`/`FakeProvider` pattern).
 - **`transcriber`** — uploads the PDF to **Gemini via `google-genai`** (File API, so large
   scans work) and requests a faithful Markdown transcription. Default model
   `gemini-2.5-pro` (better at handwriting); configurable. Returns Markdown text.
@@ -82,8 +90,11 @@ chat application never imports this package, so there is no runtime coupling.
 Sourcing is offline tooling that needs the Gemini File API and vision handling that the
 chat path's LiteLLM seam does not cleanly provide for ~100 MB scanned PDFs. `google-genai`
 is imported **only** within `src/turing/sourcing/` — a deliberate parallel to the "only
-`core/provider.py` imports `litellm`" rule — and ships as a separate optional dependency
-group (`sourcing`) so the chat runtime stays lean.
+`core/provider.py` imports `litellm`" rule — and, with `playwright`, ships as a separate
+optional dependency group (`sourcing`) so the chat runtime stays lean. `playwright` is
+likewise imported only within `src/turing/sourcing/browser`. The browser binary
+(`playwright install chromium`) is needed only to run the pipeline / the live test, not
+the default mocked suite.
 
 ## Data flow & storage
 
@@ -107,11 +118,15 @@ group (`sourcing`) so the chat runtime stays lean.
 
 ## Testing & quality
 
-- 100% coverage on `src/turing/sourcing/`, with **all network and Gemini calls mocked**:
-  recorded item-page HTML fixtures + a `FakeFetcher` and a fake transcriber, mirroring the
-  `FakeProvider` pattern. The default suite makes no live calls.
+- 100% coverage on `src/turing/sourcing/`, with **all browser and Gemini calls mocked**:
+  recorded item-page HTML fixtures + a `FakeBrowser` and a fake transcriber, mirroring the
+  `FakeProvider` pattern. The thin `PlaywrightBrowser` and `google-genai` adapters are
+  covered by unit tests that monkeypatch `sync_playwright` / the genai client (the same
+  technique used for `LiteLLMProvider`). The default suite launches no browser and makes no
+  network/Gemini calls.
 - One optional `@pytest.mark.live` test fetches and transcribes a single real reference
-  end-to-end behind `GEMINI_API_KEY`; excluded from the default run and from coverage.
+  end-to-end behind `GEMINI_API_KEY` (and a locally installed Chromium); excluded from the
+  default run and from coverage.
 - ruff + `ty` clean; same gates as the rest of the repo.
 
 ## Out of scope
