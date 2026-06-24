@@ -5,4 +5,6 @@ node_modules/
 .env
 dist/
 .DS_Store
-.claude/settings.local.json
+.coverage
+coverage.xml
+claude/settings.local.json
