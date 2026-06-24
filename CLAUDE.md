@@ -16,13 +16,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Architecture
 
 Prompt-only persona chatbot. Data flows: frontend → FastAPI SSE (`src/turing/api/app.py`)
-→ `ChatSession` (`core/chat.py`) → `ChatProvider` (`core/provider.py`) → LiteLLM → LLM.
+→ `ChatSession` (`src/turing/core/chat.py`) → `ChatProvider` (`src/turing/core/provider.py`) → LiteLLM → LLM.
 
 - **Persona is content, not code.** `src/turing/personas/` holds a shared `base.md`
-  plus per-audience overlays, registered in `personas.yaml`. `core/personas.py` composes
+  plus per-audience overlays, registered in `personas.yaml`. `src/turing/core/personas.py` composes
   `base + overlay` into a system prompt. Add an audience by adding a `.md` + a registry
   entry — no code change.
-- **Provider seam.** Only `core/provider.py` may import `litellm`. Everything else
+- **Provider seam.** Only `src/turing/core/provider.py` may import `litellm`. Everything else
   depends on the `ChatProvider` protocol; `FakeProvider` backs offline tests,
   `LiteLLMProvider` is production. This is what keeps the system retargetable to
   Claude/OpenAI (and a future plugin).

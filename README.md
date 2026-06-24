@@ -17,10 +17,21 @@ cd frontend && npm install && npm run dev   # http://localhost:5173
 
 ## Quality
 
+### Backend
+
 ```bash
 uv run pytest --cov          # 100% coverage required
 uv run ruff check .          # lint
-uv run ruff format .         # format
+uv run ruff format .         # format (use --check to verify without writing, as CI does)
 uv run ty check              # type check
 uv run pytest -m live        # optional: hits real Gemini (needs GEMINI_API_KEY)
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm run lint    # oxlint
+npm run test    # vitest
+npm run build
 ```
