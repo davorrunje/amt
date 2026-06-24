@@ -24,7 +24,12 @@ export async function streamChat(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ persona_id: personaId, messages }),
   });
-  const reader = res.body!.getReader();
+  if (!res.ok) {
+    onToken("\n[error: request failed (" + res.status + ")]");
+    return;
+  }
+  if (!res.body) return;
+  const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
   for (;;) {

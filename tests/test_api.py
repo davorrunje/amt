@@ -62,7 +62,16 @@ def test_chat_provider_error_emits_error_event():
     )
     assert resp.status_code == 200
     events = _events(resp.text)
-    assert events[-1] == {"type": "error", "message": "boom"}
+    assert events == [{"type": "error", "message": "boom"}]
+
+
+def test_chat_invalid_role_returns_422():
+    client = TestClient(create_app(ChatSession(_fake(["x"]))))
+    resp = client.post(
+        "/chat",
+        json={"persona_id": "student", "messages": [{"role": "system", "content": "hi"}]},
+    )
+    assert resp.status_code == 422
 
 
 def test_create_app_without_session_builds_default():

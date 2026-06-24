@@ -1,30 +1,35 @@
 import json
 from collections.abc import Iterator
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from turing.api.config import Settings
 from turing.core.chat import ChatSession
 from turing.core.personas import get_persona, load_registry
 from turing.core.provider import LiteLLMProvider, Message, ProviderError
 
+MAX_MESSAGE_CHARS = 8000
+MAX_MESSAGES = 100
+
 
 class ChatMessage(BaseModel):
-    role: str
-    content: str
+    role: Literal["user", "assistant"]
+    content: str = Field(..., max_length=MAX_MESSAGE_CHARS)
 
 
 class ChatRequest(BaseModel):
     persona_id: str
-    messages: list[ChatMessage]
+    messages: list[ChatMessage] = Field(..., max_length=MAX_MESSAGES)
 
 
 def _sse(payload: dict) -> str:
     return f"data: {json.dumps(payload)}\n\n"
 
 
+# TODO(public-launch): add CORS, authentication, and rate limiting before exposing publicly.
 def create_app(session: ChatSession | None = None) -> FastAPI:
     if session is None:
         settings = Settings()
