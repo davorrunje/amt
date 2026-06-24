@@ -29,6 +29,9 @@ public-facing thing (standalone website and/or a plugin for existing assistants)
   so LiteLLM itself stays swappable and mockable.
 - **Stack:** Python 3.14 + FastAPI + `uv`; Vite + React + TypeScript frontend; dev
   container for a reproducible environment.
+- **Quality gates:** ruff (lint + format) and `ty` (type checking) via pre-commit;
+  pytest with **100% coverage required**; GitHub Actions enforces all of it; Codecov
+  for coverage reporting.
 
 ## Legal / ethical constraint
 
@@ -84,8 +87,12 @@ Five units that chain cleanly; most of the weight is content, not code.
 turing/
   .devcontainer/
     devcontainer.json       # python:3.14 image + Node feature, ports 8000/5173
-    setup.sh                # install uv; uv sync; npm install in frontend/
-  pyproject.toml            # uv-managed
+    setup.sh                # install uv; uv sync; npm install; pre-commit install
+  .pre-commit-config.yaml   # ruff (lint+format) + ty hooks
+  .github/workflows/
+    ci.yml                  # lint, type-check, test+coverage, upload to Codecov
+  codecov.yml               # require 100% project coverage
+  pyproject.toml            # uv-managed; ruff/ty/pytest/coverage config
   src/turing/
     personas/               # CONTENT, not code
       base.md               # shared "who Turing is", era-awareness, guardrails
@@ -147,8 +154,25 @@ styling; no accounts, no persistence yet.
 
 - Unit: persona composition, message assembly, error mapping — all against
   `FakeProvider`, no network.
-- Integration (optional, env/marker-gated): one test that hits Gemini live; suite runs
-  fully offline by default.
+- `LiteLLMProvider` covered by a unit test that **mocks `litellm.completion`** (no
+  network), so its streaming/error-mapping code counts toward coverage.
+- Integration (optional, env/marker-gated): one test that hits Gemini live. Excluded
+  from the coverage run; suite runs fully offline by default.
+
+### Quality gates & CI
+
+- **pre-commit** (`.pre-commit-config.yaml`): `ruff check` (lint), `ruff format`
+  (formatting), and `ty` (type check) run on every commit. Installed by `setup.sh`.
+- **Coverage:** pytest + `pytest-cov` with `fail_under = 100` in `pyproject.toml`. The
+  marker-gated live test is excluded from the coverage measurement so 100% is
+  achievable offline.
+- **GitHub Actions** (`.github/workflows/ci.yml`): on push/PR — `uv sync`, then run
+  ruff lint, ruff format `--check`, `ty`, and `pytest --cov`; upload the coverage report
+  to **Codecov**. Pipeline fails if any check fails or coverage < 100%.
+- **Codecov** (`codecov.yml`): project + patch targets set to 100%; PRs blocked on a
+  coverage drop.
+- Frontend linting (ESLint/TS) is wired in CI but not gated at 100% coverage — the
+  coverage requirement applies to the Python codebase.
 
 ### Out of scope for sub-project 1
 
