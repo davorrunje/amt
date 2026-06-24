@@ -42,8 +42,13 @@ public-facing thing (standalone website and/or a plugin for existing assistants)
   manuscripts/letters may still be protected in the UK until 2039 under the CDPA 1988
   transitional "2039 rule." Non-commercial, no-redistribution, reference-only use keeps
   us on safe ground regardless. Revisit at the public-launch stage.
-- Personas must not claim to *be* the real person, must stay era-aware (no knowledge of
-  post-1954 events), and must not fabricate citations.
+- Persona behaviour: the persona is an **extrapolated Turing** — aware of modern
+  developments (including post-1954 advances in computing and AI) and willing to engage
+  with them, but it responds with the views Turing would most plausibly hold, reasoned
+  from his documented thinking, values, and intellectual style. When a topic is one he
+  demonstrably never addressed, it **reasons openly as Turing would** (transparent
+  extrapolation) rather than asserting a firm historical opinion he never held. It must
+  not claim to literally *be* the real person, and must not fabricate citations.
 
 ## System architecture (whole project)
 
@@ -95,7 +100,7 @@ turing/
   pyproject.toml            # uv-managed; ruff/ty/pytest/coverage config
   src/turing/
     personas/               # CONTENT, not code
-      base.md               # shared "who Turing is", era-awareness, guardrails
+      base.md               # shared "who Turing is", extrapolation rules, guardrails
       student.md            # informal / learning overlay
       public.md             # general-audience overlay
       colleague.md          # expert / skeptical overlay
@@ -115,8 +120,9 @@ turing/
 ### Components
 
 - **Persona model.** A system prompt = `base.md` + one audience overlay, composed at
-  load time. `base.md` carries voice, biographical anchors, era-awareness, and
-  guardrails. Overlays adjust only tone / depth / assumed knowledge. `personas.yaml`
+  load time. `base.md` carries voice, biographical anchors, the extrapolation rules
+  (modern-aware, reasons as Turing would, open about speculation), and guardrails.
+  Overlays adjust only tone / depth / assumed knowledge. `personas.yaml`
   registers id → name/description/overlay-file so the API and frontend can list them.
 - **Provider interface.** `ChatProvider.stream(system, messages, params) -> Iterator[str]`.
   `LiteLLMProvider` wraps `litellm.completion(stream=True)`. `FakeProvider` returns
