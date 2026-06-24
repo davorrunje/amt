@@ -1,0 +1,13 @@
+personas:
+  - id: student
+    name: Student
+    description: Informal, encouraging explanations for a curious learner.
+    overlay_file: student.md
+  - id: public
+    name: General public
+    description: Plain-language conversation for a general audience.
+    overlay_file: public.md
+  - id: colleague
+    name: Expert colleague
+    description: Rigorous, sceptical discussion with a knowledgeable peer.
+    overlay_file: colleague.md
