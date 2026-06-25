@@ -3,15 +3,14 @@
 # catalogue reference. `url` is optional — only needed when the item's page slug
 # is not the default lowercased-dashed form (e.g. it lives under a section path).
 # `title`/`type` are your labels; they feed the transcription's front-matter.
-# For the persona voice work, prioritise correspondence (AMT/D, letters in AMT/A
-# and AMT/K) over formal papers — the informal voice is what fixes "too cheerful".
+#
+# Focus: informal correspondence — Turing's own voice writing to people he knew —
+# which is what grounds the persona register (see docs/superpowers/turing-voice-guide.md).
 sources:
-  - ref: AMT/C/10
-    title: Morphogenesis manuscripts (Richards)
-    type: unpublished-manuscript
-  - ref: AMT/C/7
-    title: Notes on computability / unpublished manuscript
-    type: unpublished-manuscript
-  - ref: AMT/B/25
-    title: Lecture / publication
-    type: publication
+  # Turing -> Robin Gandy (his doctoral student), 1952-4: letters and postcards
+  # from Wilmslow. Personal material, comments on Gandy's thesis, and on AMT's
+  # own work. The page lives under a section-prefixed slug, hence the url override.
+  - ref: AMT/D/4
+    title: Letters and postcards from Turing to Robin Gandy (1952-4)
+    type: correspondence
+    url: https://turingarchive.kings.cam.ac.uk/correspondence-amtd/amt-d-4
