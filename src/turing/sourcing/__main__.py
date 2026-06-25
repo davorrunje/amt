@@ -1,34 +1,35 @@
-import argparse
 from pathlib import Path
+
+import typer
 
 from turing.sourcing.browser import PlaywrightBrowser
 from turing.sourcing.pipeline import load_sources, run
 from turing.sourcing.transcriber import GeminiTranscriber
 
+app = typer.Typer(help="Transcribe curated archive items.")
 
-def main(argv: list[str] | None = None, *, browser=None, transcriber=None) -> int:
-    parser = argparse.ArgumentParser(
-        prog="turing.sourcing", description="Transcribe curated archive items."
-    )
-    parser.add_argument("--sources", default="corpus/sources.yaml")
-    parser.add_argument("--corpus-dir", default="corpus")
-    parser.add_argument("--cache-dir", default="corpus/cache")
-    parser.add_argument("--model", default="gemini-2.5-pro")
-    parser.add_argument("--force", action="store_true")
-    args = parser.parse_args(argv)
 
+def run_sourcing(
+    *,
+    model: str = "gemini-2.5-pro",
+    force: bool = False,
+    sources: str = "corpus/sources.yaml",
+    corpus_dir: str = "corpus",
+    cache_dir: str = "corpus/cache",
+    browser=None,
+    transcriber=None,
+) -> int:
     if browser is None:
         browser = PlaywrightBrowser()
     if transcriber is None:
-        transcriber = GeminiTranscriber(model=args.model)
-
+        transcriber = GeminiTranscriber(model=model)
     results = run(
-        load_sources(Path(args.sources)),
+        load_sources(Path(sources)),
         browser=browser,
         transcriber=transcriber,
-        corpus_dir=Path(args.corpus_dir),
-        cache_dir=Path(args.cache_dir),
-        force=args.force,
+        corpus_dir=Path(corpus_dir),
+        cache_dir=Path(cache_dir),
+        force=force,
     )
     for result in results:
         suffix = f" ({result.error})" if result.error else ""
@@ -36,5 +37,24 @@ def main(argv: list[str] | None = None, *, browser=None, transcriber=None) -> in
     return 1 if any(r.status == "error" for r in results) else 0
 
 
+@app.callback(invoke_without_command=True)
+def _main(
+    model: str = "gemini-2.5-pro",
+    force: bool = False,
+    sources: str = "corpus/sources.yaml",
+    corpus_dir: str = "corpus",
+    cache_dir: str = "corpus/cache",
+) -> None:
+    raise typer.Exit(
+        run_sourcing(
+            model=model, force=force, sources=sources, corpus_dir=corpus_dir, cache_dir=cache_dir
+        )
+    )
+
+
+def main() -> None:
+    app()
+
+
 if __name__ == "__main__":  # pragma: no cover
-    raise SystemExit(main())
+    main()
