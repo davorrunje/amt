@@ -7,6 +7,6 @@ dist/
 .DS_Store
 .coverage
 coverage.xml
-claude/settings.local.json
-corpus/
+.claude/settings.local.json
+corpus/*
 !corpus/sources.yaml
