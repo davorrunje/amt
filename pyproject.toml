@@ -19,7 +19,17 @@ dev = [
     "ruff>=0.8",
     "ty>=0.0.1a5",
     "pre-commit>=4.0",
+    {include-group = "sourcing"},
 ]
+sourcing = [
+    "playwright>=1.49",
+    "google-genai>=1.0",
+    "beautifulsoup4>=4.12",
+    "pypdf>=5.0",
+]
+
+[project.scripts]
+amt = "turing.cli.main:main"
 
 [build-system]
 requires = ["hatchling"]

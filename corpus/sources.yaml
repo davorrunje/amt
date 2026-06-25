@@ -1,0 +1,38 @@
+# Master list of Turing Digital Archive references to download + OCR.
+# This is the COMPLETE download set — entries are never removed, only added.
+# The pipeline (`python -m turing.sourcing`) only fetches + transcribes items
+# that are MISSING from corpus/ (an item is "done" when corpus/<slug>.md exists);
+# use --force to re-do everything.
+#
+# `url` is optional — only needed when the item's page slug is not the default
+# lowercased-dashed form (e.g. it lives under a section path).
+# `title`/`type` are curator labels; they feed the transcription's front-matter.
+#
+# WHICH of these documents are used for the personas, and HOW, is defined
+# separately in docs/superpowers/specs/2026-06-25-persona-sourcing-methodology.md
+# (this file is just the download manifest, not the persona selection).
+sources:
+  # --- Correspondence (informal register; primary material for persona voice) ---
+  # Turing -> Robin Gandy (his doctoral student), 1952-4: letters and postcards
+  # from Wilmslow. Personal material, comments on Gandy's thesis and on AMT's work.
+  # Page uses a section-prefixed slug, hence the url override.
+  - ref: AMT/D/4
+    title: Letters and postcards from Turing to Robin Gandy (1952-4)
+    type: correspondence
+    url: https://turingarchive.kings.cam.ac.uk/correspondence-amtd/amt-d-4
+
+  # --- Unpublished manuscripts (formal/technical) ---
+  - ref: AMT/C/7
+    title: "'A diffusion-reaction theory of morphogenesis in plants' (with C.W. Wardlaw)"
+    type: unpublished-manuscript
+  - ref: AMT/C/10
+    title: "Morphogenesis MS, Part III: solution for the case of spherical symmetry (B. Richards)"
+    type: unpublished-manuscript
+
+  # --- Publications / lectures ---
+  # NOTE: AMT/B/25 currently fails transcription with Gemini 400 INVALID_ARGUMENT
+  # (likely an oversized/many-page scan or a Files-API state issue). Kept in the
+  # list so it retries once the transcriber handles large files.
+  - ref: AMT/B/25
+    title: Publication / lecture (AMT/B/25)
+    type: publication

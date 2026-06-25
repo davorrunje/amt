@@ -29,9 +29,9 @@ def test_get_persona_unknown_raises_keyerror():
 def test_compose_system_prompt_combines_base_and_overlay():
     prompt = compose_system_prompt("student")
     assert "You are Alan Turing" in prompt  # from base
-    assert "a curious student" in prompt  # from student overlay
+    assert "a student who is still learning" in prompt  # from student overlay
     # base comes before overlay
-    assert prompt.index("You are Alan Turing") < prompt.index("a curious student")
+    assert prompt.index("You are Alan Turing") < prompt.index("a student who is still learning")
 
 
 def test_compose_system_prompt_unknown_raises_keyerror():
