@@ -10,3 +10,4 @@ coverage.xml
 .claude/settings.local.json
 corpus/*
 !corpus/sources.yaml
+src/turing/personas/candidates/
