@@ -45,7 +45,7 @@ def _killpg(proc: subprocess.Popen) -> None:
         pass
 
 
-def run_web(*, launch=_launch, killpg=_killpg, backend_port=8000, frontend_port=5174) -> int:
+def run_web(*, launch=_launch, killpg=_killpg, backend_port=8000, frontend_port=5173) -> int:
     procs: list[subprocess.Popen] = []
     backend_cmd = [
         "uv",

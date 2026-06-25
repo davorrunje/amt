@@ -23,6 +23,8 @@ def test_run_cli_streams_and_writes_transcript(tmp_path):
     assert "student" in transcript
     assert "What is mind?" in transcript
     assert "Hello there" in transcript
+    assert "**You:** What is mind?" in transcript
+    assert "**Turing:** Hello there" in transcript
 
 
 def test_run_cli_stops_on_empty_line(tmp_path):
