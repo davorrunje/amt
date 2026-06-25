@@ -1,5 +1,6 @@
 import difflib
 import shutil
+import sys
 from pathlib import Path
 
 import yaml
@@ -38,8 +39,6 @@ def run(
     candidates_dir: Path | None = None,
     output_stream=None,
 ) -> int:
-    import sys
-
     config_path = build_config_path or BUILD_CONFIG
     personas_dir = personas_dir or PERSONAS_DIR
     candidates_dir = candidates_dir or CANDIDATES_DIR
@@ -47,10 +46,16 @@ def run(
     config = load_build_config(config_path)
 
     if args.apply:
+        missing = [
+            spec["file"]
+            for spec in config["personas"].values()
+            if not (candidates_dir / spec["file"]).exists()
+        ]
+        if missing:
+            print(f"Missing candidates: {', '.join(missing)}. Run `amt personas` first.", file=out)
+            return 1
         for spec in config["personas"].values():
-            candidate = candidates_dir / spec["file"]
-            if candidate.exists():
-                shutil.copyfile(candidate, personas_dir / spec["file"])
+            shutil.copyfile(candidates_dir / spec["file"], personas_dir / spec["file"])
         print("Applied candidates to live personas.", file=out)
         return 0
 

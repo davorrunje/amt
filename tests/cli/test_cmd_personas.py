@@ -86,7 +86,8 @@ def test_apply_promotes_candidates(tmp_path):
     _, personas, cfg = _setup(tmp_path)
     candidates = tmp_path / "candidates"
     candidates.mkdir()
-    (candidates / "base.md").write_text("PROMOTED\n")
+    for name in ("base.md", "student.md", "public.md", "colleague.md"):
+        (candidates / name).write_text(f"PROMOTED {name}\n")
     code = cmd_personas.run(
         SimpleNamespace(prompt=None, apply=True),
         build_config_path=cfg,
@@ -95,7 +96,33 @@ def test_apply_promotes_candidates(tmp_path):
         output_stream=io.StringIO(),
     )
     assert code == 0
-    assert (personas / "base.md").read_text() == "PROMOTED\n"
+    assert (personas / "base.md").read_text() == "PROMOTED base.md\n"
+    assert (personas / "student.md").read_text() == "PROMOTED student.md\n"
+    assert (personas / "public.md").read_text() == "PROMOTED public.md\n"
+    assert (personas / "colleague.md").read_text() == "PROMOTED colleague.md\n"
+
+
+def test_apply_errors_when_candidate_missing(tmp_path):
+    _, personas, cfg = _setup(tmp_path)
+    candidates = tmp_path / "candidates"
+    candidates.mkdir()
+    # Seed only base.md — others are missing
+    (candidates / "base.md").write_text("PROMOTED\n")
+    out = io.StringIO()
+    code = cmd_personas.run(
+        SimpleNamespace(prompt=None, apply=True),
+        build_config_path=cfg,
+        personas_dir=personas,
+        candidates_dir=candidates,
+        output_stream=out,
+    )
+    assert code == 1
+    output = out.getvalue()
+    assert "Missing candidates:" in output
+    assert "student.md" in output
+    # Live personas must be unchanged (no partial promotion)
+    for name in ("base.md", "student.md", "public.md", "colleague.md"):
+        assert (personas / name).read_text() == f"OLD {name}\n"
 
 
 def test_run_default_provider_constructed(monkeypatch, tmp_path):
