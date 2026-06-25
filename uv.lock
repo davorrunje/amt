@@ -1504,6 +1504,7 @@ dependencies = [
     { name = "litellm" },
     { name = "pydantic-settings" },
     { name = "pyyaml" },
+    { name = "typer" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -1533,6 +1534,7 @@ requires-dist = [
     { name = "litellm", specifier = ">=1.55" },
     { name = "pydantic-settings", specifier = ">=2.6" },
     { name = "pyyaml", specifier = ">=6.0" },
+    { name = "typer", specifier = ">=0.12" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
 ]
 

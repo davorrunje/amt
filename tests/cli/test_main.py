@@ -1,6 +1,10 @@
 import os
 
+from typer.testing import CliRunner
+
 from turing.cli import main as main_module
+
+runner = CliRunner()
 
 
 def test_load_env_sets_missing_keys(tmp_path, monkeypatch):
@@ -11,6 +15,7 @@ def test_load_env_sets_missing_keys(tmp_path, monkeypatch):
     main_module.load_env(env)
     assert os.environ["GEMINI_API_KEY"] == "abc123"
     assert os.environ["FOO"] == "bar"
+    assert "EMPTY" not in os.environ
 
 
 def test_load_env_does_not_override_existing(tmp_path, monkeypatch):
@@ -22,43 +27,60 @@ def test_load_env_does_not_override_existing(tmp_path, monkeypatch):
 
 
 def test_load_env_missing_file_is_noop(tmp_path):
-    main_module.load_env(tmp_path / "nope.env")  # must not raise
+    main_module.load_env(tmp_path / "nope.env")
 
 
-def test_parser_parses_source():
-    args = main_module.build_parser().parse_args(["source", "--model", "m", "--force"])
-    assert args.command == "source"
-    assert args.model == "m"
-    assert args.force is True
-
-
-def test_main_dispatches(monkeypatch):
+def test_source_command_wires_args(monkeypatch):
     monkeypatch.setattr(main_module, "load_env", lambda *a, **k: None)
+    captured = {}
+    monkeypatch.setattr(main_module.cmd_source, "run", lambda **kw: captured.update(kw) or 0)
+    result = runner.invoke(main_module.app, ["source", "--model", "m", "--force"])
+    assert result.exit_code == 0
+    assert captured == {"model": "m", "force": True}
+
+
+def test_chat_command_wires_args(monkeypatch):
+    monkeypatch.setattr(main_module, "load_env", lambda *a, **k: None)
+    captured = {}
+    monkeypatch.setattr(main_module.cmd_chat, "run", lambda **kw: captured.update(kw) or 0)
+    result = runner.invoke(main_module.app, ["chat", "--web", "--persona", "colleague"])
+    assert result.exit_code == 0
+    assert captured == {"web": True, "persona": "colleague", "keep": None}
+
+
+def test_chat_defaults_to_student_terminal(monkeypatch):
+    monkeypatch.setattr(main_module, "load_env", lambda *a, **k: None)
+    captured = {}
+    monkeypatch.setattr(main_module.cmd_chat, "run", lambda **kw: captured.update(kw) or 0)
+    result = runner.invoke(main_module.app, ["chat"])
+    assert result.exit_code == 0
+    assert captured == {"web": False, "persona": "student", "keep": None}
+
+
+def test_chat_rejects_unknown_persona(monkeypatch):
+    monkeypatch.setattr(main_module, "load_env", lambda *a, **k: None)
+    result = runner.invoke(main_module.app, ["chat", "--persona", "bogus"])
+    assert result.exit_code != 0
+
+
+def test_personas_command_wires_args(monkeypatch):
+    monkeypatch.setattr(main_module, "load_env", lambda *a, **k: None)
+    captured = {}
+    monkeypatch.setattr(main_module.cmd_personas, "run", lambda **kw: captured.update(kw) or 0)
+    result = runner.invoke(main_module.app, ["personas", "--prompt", "x", "--apply"])
+    assert result.exit_code == 0
+    assert captured == {"prompt": "x", "apply": True}
+
+
+def test_command_propagates_nonzero(monkeypatch):
+    monkeypatch.setattr(main_module, "load_env", lambda *a, **k: None)
+    monkeypatch.setattr(main_module.cmd_source, "run", lambda **kw: 3)
+    result = runner.invoke(main_module.app, ["source"])
+    assert result.exit_code == 3
+
+
+def test_main_invokes_app(monkeypatch):
     called = {}
-    monkeypatch.setattr(
-        main_module.cmd_source, "run", lambda args, **kw: called.setdefault("ran", 0) or 7
-    )
-    assert main_module.main(["source"]) == 7
-    assert "ran" in called
-
-
-def test_parser_parses_chat_defaults():
-    args = main_module.build_parser().parse_args(["chat"])
-    assert args.command == "chat"
-    assert args.persona == "student"
-    assert args.web is False and args.cli is False
-    assert args.keep is None
-
-
-def test_parser_chat_rejects_cli_and_web_together():
-    import pytest
-
-    with pytest.raises(SystemExit):
-        main_module.build_parser().parse_args(["chat", "--cli", "--web"])
-
-
-def test_parser_parses_personas():
-    args = main_module.build_parser().parse_args(["personas", "--prompt", "x", "--apply"])
-    assert args.command == "personas"
-    assert args.prompt == "x"
-    assert args.apply is True
+    monkeypatch.setattr(main_module, "app", lambda: called.setdefault("ran", True))
+    main_module.main()
+    assert called["ran"] is True

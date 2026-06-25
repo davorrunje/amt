@@ -1,6 +1,5 @@
 import io
 from pathlib import Path
-from types import SimpleNamespace
 
 from turing.cli import cmd_chat
 from turing.core.provider import FakeProvider
@@ -76,9 +75,10 @@ def test_run_dispatches_to_cli_with_defaults(monkeypatch, tmp_path):
         def stream(self, system, messages, *, temperature, max_tokens):
             yield "ok"
 
-    args = SimpleNamespace(web=False, persona="student", keep=None)
     code = cmd_chat.run(
-        args,
+        web=False,
+        persona="student",
+        keep=None,
         provider=_Prov(),
         input_stream=iter(["hi", "/quit"]),
         output_stream=io.StringIO(),
@@ -91,8 +91,13 @@ def test_run_cli_constructs_default_provider(monkeypatch, tmp_path):
     # exercises the provider-None construction branch without network
     sentinel = FakeProvider(["x"])
     monkeypatch.setattr(cmd_chat, "LiteLLMProvider", lambda model: sentinel)
-    args = SimpleNamespace(web=False, persona="student", keep=str(tmp_path / "k.md"))
-    code = cmd_chat.run(args, input_stream=iter([""]), output_stream=io.StringIO())
+    code = cmd_chat.run(
+        web=False,
+        persona="student",
+        keep=str(tmp_path / "k.md"),
+        input_stream=iter([""]),
+        output_stream=io.StringIO(),
+    )
     assert code == 0
 
 
@@ -163,4 +168,4 @@ def test_default_launch_and_killpg_manage_a_real_process():
 
 def test_run_dispatches_to_web(monkeypatch):
     monkeypatch.setattr(cmd_chat, "run_web", lambda **kw: 42)
-    assert cmd_chat.run(SimpleNamespace(web=True, persona="student", keep=None)) == 42
+    assert cmd_chat.run(web=True, persona="student", keep=None) == 42
