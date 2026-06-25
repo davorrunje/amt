@@ -99,3 +99,66 @@ def test_default_keep_name_format():
     assert name.startswith("amt-")
     assert name.endswith(".md")
     assert len(name) == len("amt-YYYYMMDD-HHMMSS.md")
+
+
+def test_run_web_launches_both_and_kills_them(monkeypatch):
+    launched, killed = [], []
+
+    class _Proc:
+        def __init__(self, cmd):
+            self.cmd = cmd
+            self.pid = 1234
+
+        def wait(self):
+            return 0
+
+    def fake_launch(cmd):
+        p = _Proc(cmd)
+        launched.append(cmd)
+        return p
+
+    def fake_killpg(proc):
+        killed.append(proc.cmd)
+
+    code = cmd_chat.run_web(
+        launch=fake_launch, killpg=fake_killpg, backend_port=8001, frontend_port=5174
+    )
+    assert code == 0
+    assert any("uvicorn" in " ".join(c) for c in launched)
+    assert any("dev" in " ".join(c) for c in launched)
+    assert len(killed) == 2  # both torn down
+
+
+def test_run_web_tears_down_on_keyboard_interrupt(monkeypatch):
+    killed = []
+
+    class _Proc:
+        pid = 1
+
+        def __init__(self, cmd):
+            self.cmd = cmd
+
+        def wait(self):
+            raise KeyboardInterrupt
+
+    code = cmd_chat.run_web(launch=lambda cmd: _Proc(cmd), killpg=lambda p: killed.append(p))
+    assert code == 0
+    assert len(killed) == 2
+
+
+def test_default_launch_and_killpg_manage_a_real_process():
+    # Covers the real _launch/_killpg using a short-lived child in its own session.
+    proc = cmd_chat._launch(["sleep", "30"])
+    try:
+        assert proc.pid > 0
+        cmd_chat._killpg(proc)
+        proc.wait(timeout=5)
+        assert proc.returncode is not None
+    finally:
+        if proc.poll() is None:  # pragma: no cover - safety net
+            proc.kill()
+
+
+def test_run_dispatches_to_web(monkeypatch):
+    monkeypatch.setattr(cmd_chat, "run_web", lambda **kw: 42)
+    assert cmd_chat.run(SimpleNamespace(web=True, persona="student", keep=None)) == 42

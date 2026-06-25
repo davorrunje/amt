@@ -1,3 +1,6 @@
+import os
+import signal
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -31,7 +34,49 @@ def run_cli(persona, keep_path, *, provider, input_stream, output_stream) -> int
     return 0
 
 
+def _launch(cmd: list[str]) -> subprocess.Popen:
+    return subprocess.Popen(cmd, start_new_session=True)
+
+
+def _killpg(proc: subprocess.Popen) -> None:
+    try:
+        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+    except ProcessLookupError:  # pragma: no cover - already exited
+        pass
+
+
+def run_web(*, launch=_launch, killpg=_killpg, backend_port=8000, frontend_port=5174) -> int:
+    procs: list[subprocess.Popen] = []
+    backend_cmd = [
+        "uv",
+        "run",
+        "uvicorn",
+        "turing.api.app:app",
+        "--reload",
+        "--port",
+        str(backend_port),
+    ]
+    frontend_cmd = ["npm", "--prefix", "frontend", "run", "dev", "--", "--port", str(frontend_port)]
+    try:
+        procs.append(launch(backend_cmd))
+        procs.append(launch(frontend_cmd))
+        print(
+            f"backend http://localhost:{backend_port}"
+            f"  frontend http://localhost:{frontend_port}"
+            f"  (Ctrl+C to stop)"
+        )
+        procs[0].wait()
+        return 0
+    except KeyboardInterrupt:
+        return 0
+    finally:
+        for proc in procs:
+            killpg(proc)
+
+
 def run(args, *, provider=None, input_stream=None, output_stream=None) -> int:
+    if args.web:
+        return run_web()
     keep = args.keep or default_keep_name()
     if provider is None:
         provider = LiteLLMProvider(Settings().model)
