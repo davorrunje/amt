@@ -2,7 +2,7 @@ import argparse
 import os
 from pathlib import Path
 
-from turing.cli import cmd_source
+from turing.cli import cmd_chat, cmd_source
 
 
 def load_env(path: Path = Path(".env")) -> None:
@@ -24,6 +24,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_source.add_argument("--model", default="gemini-2.5-pro")
     p_source.add_argument("--force", action="store_true")
     p_source.set_defaults(func=cmd_source.run)
+
+    p_chat = sub.add_parser("chat", help="Talk to Turing (terminal or web).")
+    mode = p_chat.add_mutually_exclusive_group()
+    mode.add_argument("--cli", action="store_true", help="Terminal REPL (default).")
+    mode.add_argument("--web", action="store_true", help="Launch the web UI.")
+    p_chat.add_argument(
+        "--persona",
+        default="student",
+        choices=["student", "public", "colleague"],
+    )
+    p_chat.add_argument(
+        "--keep",
+        default=None,
+        help="Transcript path (default amt-<timestamp>.md).",
+    )
+    p_chat.set_defaults(func=cmd_chat.run)
 
     return parser
 

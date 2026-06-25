@@ -40,3 +40,18 @@ def test_main_dispatches(monkeypatch):
     )
     assert main_module.main(["source"]) == 7
     assert "ran" in called
+
+
+def test_parser_parses_chat_defaults():
+    args = main_module.build_parser().parse_args(["chat"])
+    assert args.command == "chat"
+    assert args.persona == "student"
+    assert args.web is False and args.cli is False
+    assert args.keep is None
+
+
+def test_parser_chat_rejects_cli_and_web_together():
+    import pytest
+
+    with pytest.raises(SystemExit):
+        main_module.build_parser().parse_args(["chat", "--cli", "--web"])
