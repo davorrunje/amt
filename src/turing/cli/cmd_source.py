@@ -3,10 +3,8 @@ import sys
 from turing.sourcing.__main__ import run_sourcing
 
 
-def run(args, *, browser=None, transcriber=None) -> int:
-    code = run_sourcing(
-        model=args.model, force=args.force, browser=browser, transcriber=transcriber
-    )
+def run(*, model: str, force: bool, browser=None, transcriber=None) -> int:
+    code = run_sourcing(model=model, force=force, browser=browser, transcriber=transcriber)
     if code != 0:
         print(
             "\nIf an item failed: ensure Chromium is installed (uv run playwright install chromium)"

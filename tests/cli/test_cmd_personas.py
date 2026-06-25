@@ -1,5 +1,4 @@
 import io
-from types import SimpleNamespace
 
 import pytest
 
@@ -44,7 +43,8 @@ def test_run_writes_candidates_and_diff_without_touching_live(tmp_path):
     candidates = tmp_path / "candidates"
     out = io.StringIO()
     code = cmd_personas.run(
-        SimpleNamespace(prompt=None, apply=False),
+        prompt=None,
+        apply=False,
         provider=FakeProvider(["NEW base content\n"]),
         build_config_path=cfg,
         corpus_dir=corpus,
@@ -71,7 +71,8 @@ def test_run_appends_extra_prompt(tmp_path):
 
     spy = _Spy()
     cmd_personas.run(
-        SimpleNamespace(prompt="BE TERSE", apply=False),
+        prompt="BE TERSE",
+        apply=False,
         provider=spy,
         build_config_path=cfg,
         corpus_dir=corpus,
@@ -89,7 +90,8 @@ def test_apply_promotes_candidates(tmp_path):
     for name in ("base.md", "student.md", "public.md", "colleague.md"):
         (candidates / name).write_text(f"PROMOTED {name}\n")
     code = cmd_personas.run(
-        SimpleNamespace(prompt=None, apply=True),
+        prompt=None,
+        apply=True,
         build_config_path=cfg,
         personas_dir=personas,
         candidates_dir=candidates,
@@ -110,7 +112,8 @@ def test_apply_errors_when_candidate_missing(tmp_path):
     (candidates / "base.md").write_text("PROMOTED\n")
     out = io.StringIO()
     code = cmd_personas.run(
-        SimpleNamespace(prompt=None, apply=True),
+        prompt=None,
+        apply=True,
         build_config_path=cfg,
         personas_dir=personas,
         candidates_dir=candidates,
@@ -129,7 +132,8 @@ def test_run_default_provider_constructed(monkeypatch, tmp_path):
     corpus, personas, cfg = _setup(tmp_path)
     monkeypatch.setattr(cmd_personas, "LiteLLMProvider", lambda model: FakeProvider(["y\n"]))
     code = cmd_personas.run(
-        SimpleNamespace(prompt=None, apply=False),
+        prompt=None,
+        apply=False,
         build_config_path=cfg,
         corpus_dir=corpus,
         personas_dir=personas,

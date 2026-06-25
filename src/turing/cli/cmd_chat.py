@@ -74,15 +74,23 @@ def run_web(*, launch=_launch, killpg=_killpg, backend_port=8000, frontend_port=
             killpg(proc)
 
 
-def run(args, *, provider=None, input_stream=None, output_stream=None) -> int:
-    if args.web:
+def run(
+    *,
+    web: bool,
+    persona: str,
+    keep: str | None,
+    provider=None,
+    input_stream=None,
+    output_stream=None,
+) -> int:
+    if web:
         return run_web()
-    keep = args.keep or default_keep_name()
+    keep_path = keep or default_keep_name()
     if provider is None:
         provider = LiteLLMProvider(Settings().model)
     return run_cli(
-        args.persona,
-        keep,
+        persona,
+        keep_path,
         provider=provider,
         input_stream=input_stream if input_stream is not None else sys.stdin,
         output_stream=output_stream if output_stream is not None else sys.stdout,

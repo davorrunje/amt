@@ -30,8 +30,9 @@ def load_sources(refs: list[str], corpus_dir: Path) -> str:
 
 
 def run(
-    args,
     *,
+    prompt: str | None = None,
+    apply: bool = False,
     provider=None,
     build_config_path: Path | None = None,
     corpus_dir: Path | None = None,
@@ -45,7 +46,7 @@ def run(
     out = output_stream if output_stream is not None else sys.stdout
     config = load_build_config(config_path)
 
-    if args.apply:
+    if apply:
         missing = [
             spec["file"]
             for spec in config["personas"].values()
@@ -67,8 +68,8 @@ def run(
 
     for spec in config["personas"].values():
         system = spec["prompt"]
-        if args.prompt:
-            system = f"{system}\n\n{args.prompt}"
+        if prompt:
+            system = f"{system}\n\n{prompt}"
         text = "".join(
             provider.stream(
                 system,
