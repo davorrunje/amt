@@ -55,3 +55,10 @@ def test_parser_chat_rejects_cli_and_web_together():
 
     with pytest.raises(SystemExit):
         main_module.build_parser().parse_args(["chat", "--cli", "--web"])
+
+
+def test_parser_parses_personas():
+    args = main_module.build_parser().parse_args(["personas", "--prompt", "x", "--apply"])
+    assert args.command == "personas"
+    assert args.prompt == "x"
+    assert args.apply is True

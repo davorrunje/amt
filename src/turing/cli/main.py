@@ -2,7 +2,7 @@ import argparse
 import os
 from pathlib import Path
 
-from turing.cli import cmd_chat, cmd_source
+from turing.cli import cmd_chat, cmd_personas, cmd_source
 
 
 def load_env(path: Path = Path(".env")) -> None:
@@ -40,6 +40,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="Transcript path (default amt-<timestamp>.md).",
     )
     p_chat.set_defaults(func=cmd_chat.run)
+
+    p_personas = sub.add_parser("personas", help="LLM-build persona candidates from the corpus.")
+    p_personas.add_argument(
+        "--prompt", default=None, help="Extra instruction appended to every build prompt."
+    )
+    p_personas.add_argument(
+        "--apply", action="store_true", help="Promote staged candidates to live."
+    )
+    p_personas.set_defaults(func=cmd_personas.run)
 
     return parser
 
