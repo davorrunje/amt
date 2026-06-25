@@ -1,0 +1,17 @@
+# Curated Turing Digital Archive references to transcribe.
+# Add entries by browsing https://turingarchive.kings.cam.ac.uk and noting the
+# catalogue reference. `url` is optional — only needed when the item's page slug
+# is not the default lowercased-dashed form (e.g. it lives under a section path).
+# `title`/`type` are your labels; they feed the transcription's front-matter.
+# For the persona voice work, prioritise correspondence (AMT/D, letters in AMT/A
+# and AMT/K) over formal papers — the informal voice is what fixes "too cheerful".
+sources:
+  - ref: AMT/C/10
+    title: Morphogenesis manuscripts (Richards)
+    type: unpublished-manuscript
+  - ref: AMT/C/7
+    title: Notes on computability / unpublished manuscript
+    type: unpublished-manuscript
+  - ref: AMT/B/25
+    title: Lecture / publication
+    type: publication

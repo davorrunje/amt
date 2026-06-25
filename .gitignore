@@ -8,3 +8,5 @@ dist/
 .coverage
 coverage.xml
 claude/settings.local.json
+corpus/
+!corpus/sources.yaml
