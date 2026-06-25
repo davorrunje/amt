@@ -25,6 +25,7 @@ sourcing = [
     "playwright>=1.49",
     "google-genai>=1.0",
     "beautifulsoup4>=4.12",
+    "pypdf>=5.0",
 ]
 
 [build-system]
