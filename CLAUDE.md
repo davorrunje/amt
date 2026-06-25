@@ -32,6 +32,11 @@ Prompt-only persona chatbot. Data flows: frontend → FastAPI SSE (`src/turing/a
 - **Persona guardrails** (in `base.md`): extrapolated/modern-aware Turing, never claims to
   be the real man, never fabricates citations, flags speculation. Preserve these when
   editing prompts.
+- **Sourcing pipeline** (`src/turing/sourcing/`, offline tooling, not imported by the chat
+  app): curated AMT references → headless-browser fetch (`browser.py`, Playwright only here)
+  → Gemini transcription (`transcriber.py`, `google-genai` only here) → gitignored
+  `corpus/`. Run with `uv run python -m turing.sourcing` (needs `playwright install
+  chromium` + `GEMINI_API_KEY`). Tests mock both adapters; nothing sourced is committed.
 
 ## Design docs
 

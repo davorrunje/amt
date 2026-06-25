@@ -35,3 +35,16 @@ npm run lint    # oxlint
 npm run test    # vitest
 npm run build
 ```
+
+## Sourcing archive content (optional)
+
+Build a local corpus from curated Turing Archive references to ground the personas.
+Content is never committed (`corpus/` is gitignored except `sources.yaml`).
+
+```bash
+uv sync                         # installs the sourcing deps (dev group)
+uv run playwright install chromium   # one-time: the headless browser
+# edit corpus/sources.yaml to list the catalogue references you want
+GEMINI_API_KEY=... uv run python -m turing.sourcing
+```
+Transcriptions land in `corpus/<ref>.md`. Re-runs skip already-done items (use `--force` to redo).
